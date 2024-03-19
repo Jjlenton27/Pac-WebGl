@@ -49,6 +49,7 @@ pac.Setup();
 
 let world = new World(render);
 world.Setup();
+world.GenerateWorld();
 
 let ghostManager = new GhostManager(pac, world, render);
 

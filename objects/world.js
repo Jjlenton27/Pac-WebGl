@@ -98,12 +98,6 @@ class World extends RenderObject{
 
         this.wallTile = new WallTile(this.renderer);
         this.wallTile.Setup([(3/(28/2))-1,(3/(32/2))-1]);
-        
-        /*
-        x = (this.position[1]+1)*(32/2)
-        (x/(32/2)) = (this.position[1]+1)
-        (x/(32/2))-1 = (this.position[1])
-        */
     }
 
     GenerateWorld(){
@@ -115,14 +109,74 @@ class World extends RenderObject{
         //4 = clyde
 
         //https://joeiddon.github.io/projects/javascript/perlin.html
+
+        let gradients = [];
+        for (let x = -1; x < 28+1; x++) {
+            let row = [];
+            for (let y = -1; y < 32+1; y++) {
+                row.push(this.RandomUnitVector());
+            }
+            
+            gradients.push(row);
+        }
+
+        let possibleLevel = [];
+        let emptyCount = 0;
         for (let x = 0; x < 28; x++) {
             let row = [];
             for (let y = 0; y < 32; y++) {
-                row.push(Math.random());
+                let cellGrads = [
+                    gradients[x+2][y+2],
+                    gradients[x][y+2],
+                    gradients[x][y],
+                    gradients[x+2][y]
+                ];
+
+                if(this.GetPerlinValue(cellGrads) > 0.5){
+                    row.push(new WallTile(this.renderer));//Math.random());
+                    row[row.length-1].Setup([(x/(28/2))-1,(y/(32/2))-1]);
+                }
+
+                else
+                emptyCount++;
             }
 
-            this.levelMap.push(row);
+            possibleLevel.push(row);
         }
+    }
+
+    RandomUnitVector(){
+        let theta = Math.random() * 2 * Math.PI;
+        return [Math.cos(theta), Math.sin(theta)];
+    }
+
+    DotProduct(vectorOne, vectorTwo){
+        return(vectorOne[0] + vectorTwo[0] * vectorOne[1] + vectorTwo[1]);
+    }
+
+    Interpolate(valueOne, valueTwo, weight){
+        return (valueTwo - valueOne) * weight + valueOne;
+    }
+
+    GetPerlinValue(gradients){
+        let offsetVector = [0, 0];
+        let dotOne, dotTwo, interpOne, interpTwo;
+
+        offsetVector = [1, 1];
+        dotOne = this.DotProduct(offsetVector, gradients[0]);
+        offsetVector = [-1, 1];
+        dotTwo = this.DotProduct(offsetVector, gradients[1]);
+
+        interpOne = this.Interpolate(dotOne, dotTwo, 0.5);
+
+        offsetVector = [-1, -1];
+        dotOne = this.DotProduct(offsetVector, gradients[2]);
+        offsetVector = [1, -1];
+        dotTwo = this.DotProduct(offsetVector, gradients[3]);
+
+        interpTwo = this.Interpolate(dotOne, dotTwo, 0.5);
+
+        return this.Interpolate(interpOne, interpTwo, 0.5);
     }
 
     SetupColliders(file){
@@ -207,7 +261,14 @@ class World extends RenderObject{
             pellet.MasterUpdate(this.deltaTime);
         });
 
-        this.wallTile.MasterUpdate(deltaTime);
+        this.levelMap.forEach(row => {
+            row.forEach(tile => {
+                console.log("tile");
+                tile.MasterUpdate(deltaTime);
+            });
+        });
+
+        //this.wallTile.MasterUpdate(deltaTime);
     }
 
     //USES DEPRECIATED FEATURES
