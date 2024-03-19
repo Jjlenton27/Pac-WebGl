@@ -1,0 +1,18 @@
+web based/embedded
+pacman required features:
+	rendering
+	2 axis movement
+	player control
+	collision/position control
+	dots/power up generation & placement
+	dots/powerup pickup
+	ghost-player collision and death
+	game end condition
+	start/end menus
+	respawn & lives
+
+
+use webgl for rendering, allows embedding (https://webgl2fundamentals.org, https://www.tutorialspoint.com/webgl/webgl_basics.htm, https://adammurray.blog/webgl/tutorials/triangle/, http://www.webglacademy.com/courses.php?courses=0_1_20_2_3_4_23_5_6_7_10#1)
+
+
+
