@@ -82,14 +82,15 @@ class World extends RenderObject{
             this.renderer.texParameterf(this.renderer.TEXTURE_2D, this.renderer.TEXTURE_MAG_FILTER, this.renderer.NEAREST);
             this.renderer.generateMipmap(this.renderer.TEXTURE_2D);
         }
-        
-        fetch('http://127.0.0.1:5500/resources/colliderMap')
+        fetch('https://jjlenton27.github.io/Pac-WebGl/resources/colliderMap')
+        //fetch('http://127.0.0.1:5500/resources/colliderMap')
         .then(response => response.text())
         .then((data) => {
             this.SetupColliders(data);
         })
 
-        fetch('http://127.0.0.1:5500/resources/navGraph')
+        fetch('https://jjlenton27.github.io/Pac-WebGl/resources/navGraph')
+        //fetch('http://127.0.0.1:5500/resources/navGraph')
         .then(response => response.text())
         .then((data) => {
             this.SetupNavMap(data);
