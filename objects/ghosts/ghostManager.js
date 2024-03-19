@@ -1,4 +1,4 @@
-import {Ghost} from "./Ghost.js"
+import {Ghost} from "./ghost.js"
 
 class GhostManager{
     constructor(player, world, renderer){
