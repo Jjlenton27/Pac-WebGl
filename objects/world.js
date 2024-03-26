@@ -96,8 +96,8 @@ class World extends RenderObject{
             this.SetupNavMap(data);
         })
 
-        this.wallTile = new WallTile(this.renderer);
-        this.wallTile.Setup([(3/(28/2))-1,(3/(32/2))-1]);
+        //this.wallTile = new WallTile(this.renderer);
+        //this.wallTile.Setup([(3/(28/2))-1,(3/(32/2))-1]);
     }
 
     GenerateWorld(){
@@ -122,9 +122,11 @@ class World extends RenderObject{
 
         let possibleLevel = [];
         let emptyCount = 0;
-        for (let x = 0; x < 28; x++) {
+        let maxPerlin = -1;
+        let minPerlin = 1;
+        for (let x = 0; x < 28/2; x++) {
             let row = [];
-            for (let y = 0; y < 32; y++) {
+            for (let y = 0; y < 32/2; y++) {
                 let cellGrads = [
                     gradients[x+2][y+2],
                     gradients[x][y+2],
@@ -132,17 +134,90 @@ class World extends RenderObject{
                     gradients[x+2][y]
                 ];
 
-                if(this.GetPerlinValue(cellGrads) > 0.5){
-                    row.push(new WallTile(this.renderer));//Math.random());
-                    row[row.length-1].Setup([(x/(28/2))-1,(y/(32/2))-1]);
+                let perlinValue = this.GetPerlinValue(cellGrads);
+                if(perlinValue > maxPerlin)
+                    maxPerlin = perlinValue;
+                if(perlinValue < minPerlin)
+                    minPerlin = perlinValue;
+
+                if(perlinValue > 0.5){
+                    row.push(new WallTile(this.renderer));
+                    row[row.length-1].Setup([(x/(28/2))-1,(y/(32/2))-1], 1);
+                    row[row.length-1].position = [row[row.length-1].position[0] + 0.5, row[row.length-1].position[1] +0.5];
+                    this.levelMap.push(row[row.length-1]);
                 }
 
-                else
-                emptyCount++;
+                else{
+                    let tile = new WallTile(this.renderer)
+                    row.push(tile);
+                    tile.Setup([(x/(28/2))-1,(y/(32/2))-1], 0.5);
+                    tile.position = [tile.position[0] + 0.5, tile.position[1] +0.5];
+                    tile.isTest = true;
+                    this.levelMap.push(tile);
+                    //row.push(null);
+                    emptyCount++;
+                }
             }
 
             possibleLevel.push(row);
         }
+
+        console.log(maxPerlin + "  " + minPerlin);
+
+        for (let y = 0; y < 32/2; y++) {
+            let string = "";
+            for (let x = 0; x < 28/2; x++) {
+                if(possibleLevel[x][y] != null)
+                    string += "1";
+                else{
+                    string += "0";
+                }
+            }
+
+            console.log(string);
+        }
+
+        let reached = [];
+        let frontier = [];
+
+        while(frontier.length == 0){
+            let x = Math.round(Math.random()*28/2);
+            let y = Math.round(Math.random()*32/2);
+            console.log(x + " " + y);
+            if(possibleLevel[x][y].isTest){
+                frontier.push([x, y]);
+            }
+        }
+
+        //Loop through the adjecent positions
+        while(frontier.length > 0){
+
+            let current = frontier[0];
+
+            for(let xOffset = -1; xOffset <= 1; xOffset++){
+                for(let yOffset = -1; yOffset <= 1; yOffset++){
+                    //Search all adjecent tiles, no diagonals
+                    if(Math.abs(xOffset) + Math.abs(yOffset) < 2 && Math.abs(xOffset) + Math.abs(yOffset) > 0){
+                        let next = [current[0]+xOffset, current[1]+yOffset]
+                        if(next[0] >= 0 && next[1] >= 0 && next[0] < 28/2 && next[1] < 32/2){
+                            //Is this position not a wall
+                            if(possibleLevel[next[0]][next[1]].isTest){
+                                //If we havent reached this position before
+                                if(!reached.find(e => e[0] == next[0] && e[1] == next[1])){
+                                    possibleLevel[next[0]][next[1]].SetColor(0);
+                                    reached.push(next);
+                                    frontier.push(next);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            frontier.shift();
+        }
+
+        console.log(reached.length + " " + emptyCount);
     }
 
     RandomUnitVector(){
@@ -261,11 +336,11 @@ class World extends RenderObject{
             pellet.MasterUpdate(this.deltaTime);
         });
 
-        this.levelMap.forEach(row => {
-            row.forEach(tile => {
-                console.log("tile");
+        this.levelMap.forEach(tile => {
+            //row.forEach(tile => {
+                //console.log("tile");
                 tile.MasterUpdate(deltaTime);
-            });
+            //});
         });
 
         //this.wallTile.MasterUpdate(deltaTime);

@@ -177,7 +177,7 @@ class Ghost extends RenderObject {
             //Priority queue stand in
             let frontier = [[pos, 1]];
 
-            let reached = [pos]
+            let reached = [pos];
             let pathFrom = {};
 
             while(frontier.length > 0){
@@ -192,7 +192,7 @@ class Ghost extends RenderObject {
                             let next = [current[0]+xOffset, current[1]+yOffset]
                             //Is this position a wall or the player
                             if(this.world.navGraph[next[1]][next[0]] == 0 || (next[0] == targetPos[0] && next[1] == targetPos[1])){
-                                //Have we reached this position before
+                                //If we havent reached this position before
                                 if(!reached.find(e => e[0] == next[0] && e[1] == next[1])){
                                     if(!(next in pathFrom)){
                                         //Add this position reached and frontier, as well as pathFrom with current as the from position

@@ -25,12 +25,13 @@ class WallTile extends RenderObject{
             }"
         );
 
+        this.isTest = false;
         this.size = 0.07125/2;
     }
 
-    Setup(pos){
+    Setup(pos, color){
         //Create verticies and indicies arrays
-        let color = Math.random();
+        //let color = 1;//Math.random();
 
         let verticies = [
             -1,-1, //bL
@@ -53,6 +54,24 @@ class WallTile extends RenderObject{
         super.Setup(verticies, indicies);
 
         this.position = pos;
+    }
+
+    SetColor(color){
+        this.verticies[2] = color[0];
+        this.verticies[3] = color[1];
+        this.verticies[4] = color[2];
+
+        this.verticies[7] = color[0];
+        this.verticies[8] = color[1];
+        this.verticies[9] = color[2];
+
+        this.verticies[12] = color[0];
+        this.verticies[13] = color[1];
+        this.verticies[14] = color[2];
+
+        this.verticies[17] = color[0];
+        this.verticies[18] = color[1];
+        this.verticies[19] = color[2];
     }
 
     ExtractAttributes(){
