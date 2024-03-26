@@ -101,7 +101,16 @@ class World extends RenderObject{
     }
 
     GenerateWorld(){
-        let returnValues = [];
+        let tiles = this.GenerateTileMap();
+        tiles.forEach(row => {
+            row.forEach(tile => {
+                if(tile != null)
+                    this.levelMap.push(tile);
+            });
+        });
+    }
+
+    GenerateTileMap(){
         //0 = player pos
         //1 = blinky
         //2 = pinky
@@ -127,64 +136,48 @@ class World extends RenderObject{
         for (let x = 0; x < 28/2; x++) {
             let row = [];
             for (let y = 0; y < 32/2; y++) {
-                let cellGrads = [
-                    gradients[x+2][y+2],
-                    gradients[x][y+2],
-                    gradients[x][y],
-                    gradients[x+2][y]
-                ];
-
-                let perlinValue = this.GetPerlinValue(cellGrads);
-                if(perlinValue > maxPerlin)
-                    maxPerlin = perlinValue;
-                if(perlinValue < minPerlin)
-                    minPerlin = perlinValue;
-
-                if(perlinValue > 0.5){
+                if(x == 0 || y == 0 || x == (28/2)-1 || y == (32/2)-1){
                     row.push(new WallTile(this.renderer));
-                    row[row.length-1].Setup([(x/(28/2))-1,(y/(32/2))-1], 1);
-                    row[row.length-1].position = [row[row.length-1].position[0] + 0.5, row[row.length-1].position[1] +0.5];
-                    this.levelMap.push(row[row.length-1]);
+                    row[row.length-1].Setup([((x+0.5)/(28/4))-1, ((y+0.5)/(32/4))-1], 1);
                 }
 
                 else{
-                    let tile = new WallTile(this.renderer)
-                    row.push(tile);
-                    tile.Setup([(x/(28/2))-1,(y/(32/2))-1], 0.5);
-                    tile.position = [tile.position[0] + 0.5, tile.position[1] +0.5];
-                    tile.isTest = true;
-                    this.levelMap.push(tile);
-                    //row.push(null);
-                    emptyCount++;
+                    let cellGrads = [
+                        gradients[x+2][y+2],
+                        gradients[x][y+2],
+                        gradients[x][y],
+                        gradients[x+2][y]
+                    ];
+    
+                    let perlinValue = this.GetPerlinValue(cellGrads);
+                    if(perlinValue > maxPerlin)
+                        maxPerlin = perlinValue;
+                    if(perlinValue < minPerlin)
+                        minPerlin = perlinValue;
+    
+                    if(perlinValue < 0.25){
+                        row.push(new WallTile(this.renderer));
+                        row[row.length-1].Setup([((x+0.5)/(28/4))-1, ((y+0.5)/(32/4))-1]);
+                    }
+    
+                    else{
+                        row.push(null);
+                        emptyCount++;
+                    }
                 }
             }
 
             possibleLevel.push(row);
         }
 
-        console.log(maxPerlin + "  " + minPerlin);
-
-        for (let y = 0; y < 32/2; y++) {
-            let string = "";
-            for (let x = 0; x < 28/2; x++) {
-                if(possibleLevel[x][y] != null)
-                    string += "1";
-                else{
-                    string += "0";
-                }
-            }
-
-            console.log(string);
-        }
-
         let reached = [];
         let frontier = [];
 
         while(frontier.length == 0){
-            let x = Math.round(Math.random()*28/2);
-            let y = Math.round(Math.random()*32/2);
+            let x = Math.abs(Math.round(Math.random()*(28/2)-1));
+            let y = Math.abs(Math.round(Math.random()*(32/2)-1));
             console.log(x + " " + y);
-            if(possibleLevel[x][y].isTest){
+            if(possibleLevel[x][y] == null){
                 frontier.push([x, y]);
             }
         }
@@ -201,10 +194,9 @@ class World extends RenderObject{
                         let next = [current[0]+xOffset, current[1]+yOffset]
                         if(next[0] >= 0 && next[1] >= 0 && next[0] < 28/2 && next[1] < 32/2){
                             //Is this position not a wall
-                            if(possibleLevel[next[0]][next[1]].isTest){
+                            if(possibleLevel[next[0]][next[1]] == null){
                                 //If we havent reached this position before
                                 if(!reached.find(e => e[0] == next[0] && e[1] == next[1])){
-                                    possibleLevel[next[0]][next[1]].SetColor(0);
                                     reached.push(next);
                                     frontier.push(next);
                                 }
@@ -217,7 +209,11 @@ class World extends RenderObject{
             frontier.shift();
         }
 
-        console.log(reached.length + " " + emptyCount);
+        if(reached.length != emptyCount){
+            possibleLevel = this.GenerateTileMap();
+        }
+
+        return possibleLevel;
     }
 
     RandomUnitVector(){
@@ -251,7 +247,7 @@ class World extends RenderObject{
 
         interpTwo = this.Interpolate(dotOne, dotTwo, 0.5);
 
-        return this.Interpolate(interpOne, interpTwo, 0.5);
+        return (this.Interpolate(interpOne, interpTwo, 0.5)+1)/2;
     }
 
     SetupColliders(file){

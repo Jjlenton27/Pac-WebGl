@@ -26,25 +26,27 @@ class WallTile extends RenderObject{
         );
 
         this.isTest = false;
-        this.size = 0.07125/2;
+        this.size = 0.0714;
     }
 
     Setup(pos, color){
         //Create verticies and indicies arrays
         //let color = 1;//Math.random();
-
+        let r = 0;
+        let g = 0;
+        let b = 0.65;
         let verticies = [
             -1,-1, //bL
-            color, color, color,//0,0.5,1, //color
+            r, g, b, //color
     
             1,-1, //bR
-            color, color, color,//0,0.5,1,
+            r, g, b,
         
             1,1, //tR
-            color, color, color,//0,0.5,1,
+            r, g, b,
     
             -1,1, //tL
-            color, color, color,//0,0.5,1,
+            r, g, b,
         ];
         let indicies =[
             0,1,2,
